@@ -1,0 +1,21 @@
+{
+  "name": "ctrnn.js",
+  "version": "0.1.0",
+  "description": "A continuous time recurrent neural network (CTRNN) library for JavaScript written in TypeScript",
+  "main": "lib/index",
+  "types": "lib/index",
+  "repository": "git@github.com:cooper-anderson/ctrnn.js.git",
+  "author": "Cooper b. Anderson <andersc7@rose-hulman.edu>",
+  "license": "MIT",
+  "scripts": {
+    "build": "tsc",
+    "test": "jest"
+  },
+  "devDependencies": {
+    "@types/jest": "^26.0.23",
+    "@types/node": "^15.6.1",
+    "jest": "^27.0.3",
+    "ts-jest": "^27.0.1",
+    "typescript": "^4.3.2"
+  }
+}
