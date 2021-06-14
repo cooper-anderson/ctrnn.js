@@ -5,12 +5,12 @@ describe("ctrnn", () => {
 
   it("is created with default configuration", () => {
     let i = 0;
-    expect(ctrnn.states.length).toBe(4);
-    const activations = ctrnn.states;
-    expect(activations[i++]).toBe(0.5);
-    expect(activations[i++]).toBe(0.5);
-    expect(activations[i++]).toBe(0.5);
-    expect(activations[i++]).toBe(0.5);
+    expect(ctrnn.outputs.length).toBe(4);
+    const outputs = ctrnn.outputs;
+    expect(outputs[i++]).toBe(0.5);
+    expect(outputs[i++]).toBe(0.5);
+    expect(outputs[i++]).toBe(0.5);
+    expect(outputs[i++]).toBe(0.5);
   });
 
   it("allows its weights to be adjusted", () => {
@@ -23,7 +23,27 @@ describe("ctrnn", () => {
 
     for (let i = 0; i < 1000; i++) ctrnn.tick([], dt);
 
-    expect(ctrnn.states[2]).toBeGreaterThan(0.81);
-    expect(ctrnn.states[2]).toBeLessThan(0.82);
+    expect(ctrnn.outputs[2]).toBeGreaterThan(0.85);
+    expect(ctrnn.outputs[2]).toBeLessThan(0.86);
+  });
+
+  it("can oscillate like a sine wave", () => {
+    const dt = 1.0 / 100.0;
+    const ctrnn = new CTRNN(2);
+
+    ctrnn.setNode(0, { bias: -2.75 });
+    ctrnn.setNode(1, { bias: -1.75 });
+    ctrnn.setWeight(0, 0, 4.5);
+    ctrnn.setWeight(1, 0, 1.0);
+    ctrnn.setWeight(0, 1, -1.0);
+    ctrnn.setWeight(1, 1, 4.5);
+
+    let out = "";
+    for (let i = 0; i < 1000; i++) {
+      ctrnn.tick([], dt);
+      const outputs = ctrnn.outputs;
+      out += outputs[0].toFixed(4) + ", " + outputs[1].toFixed(4) + "\n";
+    }
+    console.log(out);
   });
 });

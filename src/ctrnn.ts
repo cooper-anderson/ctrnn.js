@@ -1,4 +1,4 @@
-import { Node } from "./node";
+import { Node, NodeData } from "./node";
 import { sigmoid } from "./sigmoid";
 
 /**
@@ -30,14 +30,22 @@ export class CTRNN {
   /**
    * Array of each node's activation
    */
-  public states: number[];
+  private states: number[];
 
   constructor(nodes: number = 4) {
     let opts = { length: nodes };
     this.count = nodes;
     this.nodes = Array.from(opts, () => ({bias: 0, timeConstant: 1.0}));
     this.weights = Array.from(opts, () => Array.from(opts, () => 0));
-    this.states = Array.from(opts, () => 0.5);
+    this.states = Array.from(opts, () => 0.0);
+  }
+
+  public get outputs(): number[] {
+    const outputs: number[] = [];
+    for (let i = 0; i < this.count; i++) {
+      outputs.push(sigmoid(this.states[i] + this.nodes[i].bias));
+    }
+    return outputs;
   }
 
   /*
@@ -45,6 +53,11 @@ export class CTRNN {
    * Replace these `set` methods with a general `setNode` method that takes an
    * object with `bias` and `timeConstant` attributes, and maybe even `weights`
    */
+
+  public setNode(index: number, node: NodeData) {
+    this.nodes[index] = { ...this.nodes[index], ...node };
+    console.log(this.nodes);
+  }
 
   // TODO: Documentation
   public setWeight(from: number, to: number, weight: number) {
@@ -74,8 +87,11 @@ export class CTRNN {
   private getDelta(node: number): number {
     const weights = this.weights[node];
     let sum = 0;
-    for (let i = 0; i < this.count; i++) sum += weights[i] * this.states[i];
-    const lhs = sigmoid(sum - this.nodes[node].bias) - this.states[node];
-    return lhs / this.nodes[node].timeConstant;
+    for (let j = 0; j < this.count; j++) {
+      const activation = sigmoid(this.states[j] + this.nodes[j].bias);
+      sum += weights[j] * activation;
+    }
+
+    return (sum - this.states[node]) / this.nodes[node].timeConstant;
   }
 }
