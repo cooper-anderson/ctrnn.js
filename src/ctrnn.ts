@@ -56,7 +56,6 @@ export class CTRNN {
 
   public setNode(index: number, node: NodeData) {
     this.nodes[index] = { ...this.nodes[index], ...node };
-    console.log(this.nodes);
   }
 
   // TODO: Documentation
