@@ -48,30 +48,28 @@ export class Ctrnn {
     return outputs;
   }
 
-  /*
-   * TODO:
-   * Replace these `set` methods with a general `setNode` method that takes an
-   * object with `bias` and `timeConstant` attributes, and maybe even `weights`
+  /**
+   * Set the `bias` and `timeConstant` parameters of a given node
    */
-
   public setNode(index: number, node: NodeData) {
     this.nodes[index] = { ...this.nodes[index], ...node };
   }
 
-  // TODO: Documentation
+  /**
+   * Set the the given weight from one node to another
+   */
   public setWeight(from: number, to: number, weight: number) {
     this.weights[to][from] = weight;
   }
 
-  // TODO: Documentation
-  public setBias(node: number, bias: number) {
-    this.nodes[node].bias = bias;
-  }
+//   public getOutput(frame: Frame, node: number): number {
+//     return sigmoid(frame[node] + this.nodes[node].bias);
+//   }
 
-  // TODO: Documentation
-  public setTimeConstant(node: number, timeConstant: number) {
-    this.nodes[node].timeConstant = timeConstant;
-  }
+//   public getOutputs(frame: Frame): number[] {
+//     if (frame.length != this.count) throw new Error();
+//     return this.nodes.map((node, index) => sigmoid(frame[index] + node.bias));
+//   }
 
   // TODO: Documentation
   public tick(inputs: number[], dt: number) {
