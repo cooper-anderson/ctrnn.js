@@ -92,3 +92,5 @@ export class Ctrnn {
     return (sum - this.states[node]) / this.nodes[node].timeConstant;
   }
 }
+
+export type Frame = number[];
