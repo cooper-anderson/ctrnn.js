@@ -1,7 +1,7 @@
-import { CTRNN } from "../ctrnn";
+import { Ctrnn } from "../ctrnn";
 
 describe("ctrnn", () => {
-  let ctrnn: CTRNN = new CTRNN(4);
+  let ctrnn: Ctrnn = new Ctrnn(4);
 
   it("is created with default configuration", () => {
     let i = 0;
@@ -15,7 +15,7 @@ describe("ctrnn", () => {
 
   it("allows its weights to be adjusted", () => {
     const dt = 1.0 / 60.0;
-    const ctrnn = new CTRNN(3);
+    const ctrnn = new Ctrnn(3);
 
     ctrnn.setWeight(0, 2, 1.9);
     ctrnn.setWeight(1, 2, 1.9);
@@ -29,7 +29,7 @@ describe("ctrnn", () => {
 
   it("can oscillate like a sine wave", () => {
     const dt = 1.0 / 100.0;
-    const ctrnn = new CTRNN(2);
+    const ctrnn = new Ctrnn(2);
 
     ctrnn.setNode(0, { bias: -2.75 });
     ctrnn.setNode(1, { bias: -1.75 });

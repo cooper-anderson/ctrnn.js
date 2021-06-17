@@ -7,11 +7,11 @@ import { sigmoid } from "./sigmoid";
  * # Example
  *
  * ```typescript
- * import CTRNN from "ctrnn.js";
- * let ctrnn = new CTRNN();
+ * import Ctrnn from "ctrnn.js";
+ * let ctrnn = new Ctrnn();
  * ```
  */
-export class CTRNN {
+export class Ctrnn {
   /**
    * Number of nodes in the network
    */
