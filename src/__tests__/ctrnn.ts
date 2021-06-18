@@ -5,8 +5,9 @@ describe("ctrnn", () => {
 
   it("is created with default configuration", () => {
     let i = 0;
-    expect(ctrnn.outputs.length).toBe(4);
-    const outputs = ctrnn.outputs;
+    expect(ctrnn.size).toBe(4);
+    let frame = Ctrnn.newFrame(ctrnn.size);
+    const outputs = ctrnn.getOutputs(frame);
     expect(outputs[i++]).toBe(0.5);
     expect(outputs[i++]).toBe(0.5);
     expect(outputs[i++]).toBe(0.5);
@@ -21,15 +22,18 @@ describe("ctrnn", () => {
     ctrnn.setWeight(1, 2, 1.9);
     ctrnn.setWeight(2, 2, -0.5);
 
-    for (let i = 0; i < 1000; i++) ctrnn.tick([], dt);
+    let frame = Ctrnn.newFrame(ctrnn.size);
+    for (let i = 0; i < 1000; i++) frame = ctrnn.tick(frame, [], dt);
 
-    expect(ctrnn.outputs[2]).toBeGreaterThan(0.85);
-    expect(ctrnn.outputs[2]).toBeLessThan(0.86);
+    const output = ctrnn.getOutput(frame, 2);
+    expect(output).toBeGreaterThan(0.85);
+    expect(output).toBeLessThan(0.86);
   });
 
   it("can oscillate like a sine wave", () => {
     const dt = 1.0 / 100.0;
     const ctrnn = new Ctrnn(2);
+    let frame = Ctrnn.newFrame(ctrnn.size);
 
     ctrnn.setNode(0, { bias: -2.75 });
     ctrnn.setNode(1, { bias: -1.75 });
@@ -38,12 +42,18 @@ describe("ctrnn", () => {
     ctrnn.setWeight(0, 1, -1.0);
     ctrnn.setWeight(1, 1, 4.5);
 
-    let out = "";
-    for (let i = 0; i < 1000; i++) {
-      ctrnn.tick([], dt);
-      const outputs = ctrnn.outputs;
-      out += outputs[0].toFixed(4) + ", " + outputs[1].toFixed(4) + "\n";
+    const mins = [1, 1], maxs = [0, 0];
+    for (let i = 0; i < 2000; i++) {
+      frame = ctrnn.tick(frame, [], dt);
+      ctrnn.getOutputs(frame).forEach((output, index) => {
+        if (output < mins[index]) mins[index] = output;
+        if (output > maxs[index]) maxs[index] = output;
+      });
     }
-    console.log(out);
+
+    expect(mins[0]).toBeLessThan(0.0605);
+    expect(mins[1]).toBeLessThan(0.1489);
+    expect(maxs[0]).toBeGreaterThan(0.8132);
+    expect(maxs[1]).toBeGreaterThan(0.8218);
   });
 });
