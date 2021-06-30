@@ -1,5 +1,5 @@
 import { Node, NodeData } from "./node";
-import { sigmoid } from "./sigmoid";
+import { inverseSigmoid, sigmoid } from "./sigmoid";
 
 /**
  * Continuous-Time Recurrent Neural Network (`CTRNN`) implementation for JS.
@@ -62,6 +62,12 @@ export class Ctrnn {
   public getOutputs(frame: Frame): number[] {
     if (frame.length != this.size) throw new Error();
     return this.nodes.map((node, index) => sigmoid(frame[index] + node.bias));
+  }
+
+  public frameFromOutput(output: number[]): Frame {
+    if (output.length != this.size) throw new Error();
+    return output.map((voltage, index) =>
+      inverseSigmoid(voltage) - this.nodes[index].bias);
   }
 
   // TODO: Documentation

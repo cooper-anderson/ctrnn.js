@@ -1,7 +1,7 @@
 {
   "include": ["src"],
   "compilerOptions": {
-    "target": "es5",
+    "target": "es2015",
     "module": "commonjs",
     "outDir": "./lib",
     "declaration": true,
