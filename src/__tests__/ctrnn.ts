@@ -1,59 +1,65 @@
 import { Ctrnn } from "../ctrnn";
 
-describe("ctrnn", () => {
-  let ctrnn: Ctrnn = new Ctrnn(4);
+const TIMESTEP: number = 0.05;
 
-  it("is created with default configuration", () => {
-    let i = 0;
-    expect(ctrnn.size).toBe(4);
-    let frame = Ctrnn.newFrame(ctrnn.size);
-    const outputs = ctrnn.getOutputs(frame);
-    expect(outputs[i++]).toBe(0.5);
-    expect(outputs[i++]).toBe(0.5);
-    expect(outputs[i++]).toBe(0.5);
-    expect(outputs[i++]).toBe(0.5);
+describe("default ctrnn", () => {
+  const ctrnn = new Ctrnn();
+  it("starts with zero-strength synaptic connections", () => {
+    expect(ctrnn.size).toBe(2);
+    let voltages = ctrnn.init_voltage();
+    let outputs = ctrnn.getOutputs(voltages);
+    expect(outputs.length).toBe(2)
+    expect(outputs[0]).toBe(0.5);
+    expect(outputs[1]).toBe(0.5);
   });
 
-  it("allows its weights to be adjusted", () => {
-    const dt = 1.0 / 60.0;
-    const ctrnn = new Ctrnn(3);
+  it("throws error when passed in inputs of wrong size", () => {
+    let v = ctrnn.init_voltage();
+    const update = (i: number[]) => () => ctrnn.update(TIMESTEP, v, i);
+    expect(update([])).toThrow(RangeError);
+    expect(update([0])).toThrow(RangeError);
+    expect(update([0, 0])).not.toThrow(RangeError);
+    expect(update([0, 0, 0])).toThrow(RangeError);
+  })
 
-    ctrnn.setWeight(0, 2, 1.9);
-    ctrnn.setWeight(1, 2, 1.9);
-    ctrnn.setWeight(2, 2, -0.5);
-
-    let frame = Ctrnn.newFrame(ctrnn.size);
-    for (let i = 0; i < 1000; i++) frame = ctrnn.tick(frame, [], dt);
-
-    const output = ctrnn.getOutput(frame, 2);
-    expect(output).toBeGreaterThan(0.85);
-    expect(output).toBeLessThan(0.86);
-  });
-
-  it("can oscillate like a sine wave", () => {
-    const dt = 1.0 / 100.0;
-    const ctrnn = new Ctrnn(2);
-    let frame = Ctrnn.newFrame(ctrnn.size);
-
-    ctrnn.setNode(0, { bias: -2.75 });
-    ctrnn.setNode(1, { bias: -1.75 });
-    ctrnn.setWeight(0, 0, 4.5);
-    ctrnn.setWeight(1, 0, 1.0);
-    ctrnn.setWeight(0, 1, -1.0);
-    ctrnn.setWeight(1, 1, 4.5);
-
-    const mins = [1, 1], maxs = [0, 0];
-    for (let i = 0; i < 2000; i++) {
-      frame = ctrnn.tick(frame, [], dt);
-      ctrnn.getOutputs(frame).forEach((output, index) => {
-        if (output < mins[index]) mins[index] = output;
-        if (output > maxs[index]) maxs[index] = output;
-      });
+  it("approaches max activation with positive input", () => {
+    let inputs = [10.0, 10.0];
+    let voltages = ctrnn.init_voltage();
+    for (let t = 0; t < 300; t += TIMESTEP) {
+      voltages = ctrnn.update(TIMESTEP, voltages, inputs);
     }
+    let outputs = ctrnn.getOutputs(voltages);
+    expect(outputs[0]).toBeCloseTo(1);
+    expect(outputs[1]).toBeCloseTo(1);
+  });
 
-    expect(mins[0]).toBeLessThan(0.0605);
-    expect(mins[1]).toBeLessThan(0.1489);
-    expect(maxs[0]).toBeGreaterThan(0.8132);
-    expect(maxs[1]).toBeGreaterThan(0.8218);
+  it("approaches min activation with negative input", () => {
+    let inputs = [-10.0, -10.0];
+    let voltages = ctrnn.init_voltage();
+    for (let t = 0; t < 300; t += TIMESTEP) {
+      voltages = ctrnn.update(TIMESTEP, voltages, inputs);
+    }
+    let outputs = ctrnn.getOutputs(voltages);
+    expect(outputs[0]).toBeCloseTo(0);
+    expect(outputs[1]).toBeCloseTo(0);
+  });
+
+  it("changes activation state when input's sign changes", () => {
+    let inputs = [10.0, -10.0];
+    let voltages = ctrnn.init_voltage();
+    for (let t = 0; t < 300; t += TIMESTEP) {
+      voltages = ctrnn.update(TIMESTEP, voltages, inputs);
+    }
+    let outputs = ctrnn.getOutputs(voltages);
+    expect(outputs[0]).toBeCloseTo(1);
+    expect(outputs[1]).toBeCloseTo(0);
+
+    inputs = inputs.map(x => -x);
+    for (let t = 0; t < 300; t += TIMESTEP) {
+      voltages = ctrnn.update(TIMESTEP, voltages, inputs);
+    }
+    outputs = ctrnn.getOutputs(voltages);
+    expect(outputs[0]).toBeCloseTo(0);
+    expect(outputs[1]).toBeCloseTo(1);
   });
 });
