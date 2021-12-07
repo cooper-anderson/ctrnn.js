@@ -1,4 +1,4 @@
-import { sigmoid, inverseSigmoid } from "./activation";
+import { sigmoid } from "./activation";
 
 export class Ctrnn {
   private _size: number;
@@ -10,7 +10,7 @@ export class Ctrnn {
     this._size = size;
     this._biases = Array(size).fill(0);
     this._timeConstants = Array(size).fill(1);
-    this._weights = Array(size).fill(Array(size).fill(0));
+    this._weights = Array.from({length: size}, () => Array(size).fill(0));
   }
 
   /**
@@ -46,12 +46,12 @@ export class Ctrnn {
   public update(dt: number, voltages: number[], inputs?: number[]): number[] {
     inputs = inputs !== undefined ? inputs : Array(this._size).fill(0);
     if (inputs.length !== this._size) throw new RangeError();
-    const final = inputs.map((v, i) => v + this.getDelta(voltages, i) * dt)
-    return final;
+    const final = voltages.map((v, i) => v + this.getDelta(voltages, i) * dt)
+    return final.map((v, i) => v + inputs![i]);
   }
 
   public getOutputs(voltages: number[]): number[] {
-    return voltages.map(sigmoid);
+    return voltages.map((v, i) => sigmoid(v + this._biases[i]));
   }
 
   private getDelta(voltages: number[], index: number): number {
