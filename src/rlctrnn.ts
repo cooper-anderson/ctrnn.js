@@ -1,5 +1,5 @@
 import { sigmoid } from "./activation";
-import { ICTRNN } from "./ctrnn";
+import { ICTRNN } from "./ictrnn";
 import { Fluctuator } from "./fluctuator";
 
 export class RlCtrnn implements ICTRNN {
