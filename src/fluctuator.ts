@@ -18,7 +18,7 @@ export class Fluctuator {
   public time: number = 0;
 
   public convergence_rate = 0.1;
-  public learning_rate = 0.1;
+  public learning_rate = 1.0;
 
   /**
    * @param center the sine wave's central position
@@ -28,12 +28,12 @@ export class Fluctuator {
   constructor(
     center: number = 0,
     period: Range = {min: 3, max: 12},
-    amplitude: Range = {min: 0, max: 1}
+    amplitude: Range = {min: 0.001, max: 10}
   ) {
     this.center = center;
     this.period_range = period;
     this.amplitude_range = amplitude;
-    this.amplitude = amplitude.max;
+    this.amplitude = 1.0;
     this.randomize_period();
   }
 
@@ -55,15 +55,15 @@ export class Fluctuator {
   }
 
   /**
-    * @param dt the time step since the last update
-    * @param reward the feedback received from the environment
-    */
+   * @param dt the time step since the last update
+   * @param reward the feedback received from the environment
+   */
   update(dt: number, reward: number = 0): number {
-    this.amplitude -= this.convergence_rate * this.amplitude * reward;
+    this.amplitude -= this.convergence_rate * this.amplitude_range.max * reward;
     this.amplitude = clamp(this.amplitude, this.amplitude_range);
 
     let d = this.amplitude * Math.sin(this.time * 2 * Math.PI / this.period);
-    this.center += this.learning_rate * d * reward;
+    this.center += this.learning_rate * Math.sign(d) * reward;
 
     this.time += dt;
     if (this.time > this.period) this.randomize_period();
