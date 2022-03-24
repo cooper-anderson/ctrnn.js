@@ -4,11 +4,21 @@ interface CustomMatchers<R = unknown> {
   /**
    * Used when you want to verify a list contains only specified values.
    * This method does not terminate upon finding an unexpected value.
+   *
+   * @example
+   * expect([1, 2]).toContainOnly([1, 2]);
+   * expect([1, 2]).toContainOnly([1, 2, 3]);
+   * expect([1, 2, 3]).not.toContainOnly([1, 2]);
    */
   toContainOnly<E>(expected: E[]): R;
   /**
    * Used when you want to verify a list contains only specified values.
    * This method terminates upon finding an unexpected value.
+   *
+   * @example
+   * expect([1, 2]).toContainOnlyT([1, 2]);
+   * expect([1, 2]).toContainOnlyT([1, 2, 3]);
+   * expect([1, 2, 3]).not.toContainOnlyT([1, 2]);
    */
   toContainOnlyT<E>(expected: E[]): R;
 }
