@@ -28,11 +28,12 @@ export class Fluctuator {
   constructor(
     center: number = 0,
     period: Range = {min: 3, max: 12},
-    amplitude: Range = {min: 0, max: 10}
+    amplitude: Range = {min: 0, max: 1}
   ) {
     this.center = center;
     this.period_range = period;
     this.amplitude_range = amplitude;
+    this.amplitude = amplitude.max;
     this.randomize_period();
   }
 
