@@ -15,7 +15,7 @@ describe("locked period", () => {
 
   it("returns to the base value at half the period", () => {
     for (let t = 1; t < 2; t += dt) flux.update(dt);
-    expect(flux.value).toBe(3);
+    expect(flux.value).toBeCloseTo(3);
   });
 
   it("reaches a minimum at 3 quarters of the period", () => {
