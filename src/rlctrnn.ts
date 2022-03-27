@@ -23,6 +23,11 @@ export class RlCtrnn implements ICTRNN {
         this._fluctuators.push(this._weights[i][j]);
       }
     }
+    // TODO: replace this with a real way to set the amplitude
+    this._fluctuators.forEach(f => {
+      f.amplitude_range.min = 0;
+      f.amplitude = 0;
+    });
   }
 
   get size(): number {
