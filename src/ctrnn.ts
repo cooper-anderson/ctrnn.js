@@ -78,6 +78,6 @@ export class Ctrnn implements ICTRNN {
   }
 
   public get weights(): ReadonlyArray<ReadonlyArray<number>> {
-    return this.weights;
+    return this._weights;
   }
 }
