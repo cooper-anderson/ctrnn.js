@@ -41,7 +41,7 @@ export class RlCtrnn implements ICTRNN {
   }
 
   setWeight(from: number, to: number, weight: number): void {
-    this._weights[from][to].value = weight;
+    this._weights[to][from].value = weight;
   }
 
   update(dt: number, voltages: number[], inputs?: number[]): number[] {
