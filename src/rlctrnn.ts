@@ -7,6 +7,7 @@ export class RlCtrnn implements ICTRNN {
   private _biases: Fluctuator[];
   private _timeConstants: Fluctuator[];
   private _weights: Fluctuator[][];
+  private _fluctuators: Fluctuator[];
 
   constructor(size: number) {
     this._size = size;
@@ -14,6 +15,14 @@ export class RlCtrnn implements ICTRNN {
     this._biases = Array.from(o, () => new Fluctuator(0));
     this._timeConstants = Array.from(o, () => new Fluctuator(1));
     this._weights = Array.from(o, () => Array.from(o, () => new Fluctuator(0)));
+    this._fluctuators = [];
+    for (let i = 0; i < this._size; i++) {
+      this._fluctuators.push(this._biases[i]);
+      this._fluctuators.push(this._timeConstants[i]);
+      for (let j = 0; j < this._size; j++) {
+        this._fluctuators.push(this._weights[i][j]);
+      }
+    }
   }
 
   get size(): number {
@@ -47,6 +56,7 @@ export class RlCtrnn implements ICTRNN {
   update(dt: number, voltages: number[], inputs?: number[]): number[] {
     inputs = inputs !== undefined ? inputs : Array(this._size).fill(0);
     if (inputs.length !== this._size) throw new RangeError();
+    this._fluctuators.forEach(f => f.update(dt));
     const final = voltages.map((v, i) => v + this.getDelta(voltages, i) * dt)
     return final.map((v, i) => v + inputs![i]);
   }
