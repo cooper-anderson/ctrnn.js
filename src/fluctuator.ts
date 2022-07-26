@@ -1,4 +1,4 @@
-type Range = {min: number, max: number};
+type Range = { min: number; max: number };
 
 function clamp(value: number, range: Range): number {
   return Math.min(Math.max(value, range.min), range.max);
@@ -27,8 +27,8 @@ export class Fluctuator {
    */
   constructor(
     center: number = 0,
-    period: Range = {min: 3, max: 12},
-    amplitude: Range = {min: 0.001, max: 10}
+    period: Range = { min: 3, max: 12 },
+    amplitude: Range = { min: 0.001, max: 10 }
   ) {
     this.center = center;
     this.period_range = period;
@@ -47,7 +47,10 @@ export class Fluctuator {
   }
 
   get value() {
-    return this.center + this.amplitude * Math.sin(this.time * 2 * Math.PI / this.period);
+    return (
+      this.center +
+      this.amplitude * Math.sin((this.time * 2 * Math.PI) / this.period)
+    );
   }
 
   set value(v: number) {
@@ -62,7 +65,7 @@ export class Fluctuator {
     this.amplitude -= this.convergence_rate * this.amplitude_range.max * reward;
     this.amplitude = clamp(this.amplitude, this.amplitude_range);
 
-    let d = this.amplitude * Math.sin(this.time * 2 * Math.PI / this.period);
+    let d = this.amplitude * Math.cos((this.time * 2 * Math.PI) / this.period);
     this.center += this.learning_rate * Math.sign(d) * reward;
 
     this.time += dt;
