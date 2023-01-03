@@ -7,6 +7,7 @@ export interface ICTRNN {
   setTimeConstant(index: number, timeConstant: number): void;
   update(dt: number, voltages: number[], inputs?: number[]): number[];
   setWeight(from: number, to: number, weight: number): void;
+  addNode(): void;
   getOutputs(voltages: number[]): number[];
   init_voltage(): number[];
 }
