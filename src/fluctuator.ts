@@ -10,6 +10,7 @@ function lerp(range: Range, percent: number): number {
 
 export class Fluctuator {
   public center: number;
+  public range: Range;
   public period_range: Range;
   public amplitude_range: Range;
 
@@ -27,10 +28,12 @@ export class Fluctuator {
    */
   constructor(
     center: number = 0,
+    range: Range = { min: -16, max: 16 },
     period: Range = { min: 3, max: 12 },
     amplitude: Range = { min: 0.001, max: 10 }
   ) {
     this.center = center;
+    this.range = range;
     this.period_range = period;
     this.amplitude_range = amplitude;
     this.amplitude = 1.0;
@@ -65,8 +68,10 @@ export class Fluctuator {
     this.amplitude -= this.convergence_rate * this.amplitude_range.max * reward;
     this.amplitude = clamp(this.amplitude, this.amplitude_range);
 
-    let d = this.amplitude * Math.cos((this.time * 2 * Math.PI) / this.period);
-    this.center += this.learning_rate * Math.sign(d) * reward;
+    let d = this.amplitude * Math.sin((this.time * 2 * Math.PI) / this.period);
+    this.center +=
+      // this.learning_rate * Math.max(Math.abs(d), 1.0) * Math.sign(d) * reward;
+      this.learning_rate * d * reward;
 
     this.time += dt;
     if (this.time > this.period) this.randomize_period();

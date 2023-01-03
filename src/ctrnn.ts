@@ -11,13 +11,15 @@ export class Ctrnn implements ICTRNN {
     this._size = size;
     this._biases = Array(size).fill(0);
     this._timeConstants = Array(size).fill(1);
-    this._weights = Array.from({length: size}, () => Array(size).fill(0));
+    this._weights = Array.from({ length: size }, () => Array(size).fill(0));
   }
 
   /**
    * Get the number of nodes in the network
    */
-  public get size(): number { return this._size; }
+  public get size(): number {
+    return this._size;
+  }
 
   /**
    * Set an individual node's bias
@@ -44,10 +46,17 @@ export class Ctrnn implements ICTRNN {
     this._weights[to][from] = weight;
   }
 
+  addNode(): void {
+    this._biases.push(0);
+    this._timeConstants.push(1);
+    for (let i = 0; i < this._size; i++) this._weights[i].push(0);
+    this._weights.push(Array(++this._size).fill(0));
+  }
+
   public update(dt: number, voltages: number[], inputs?: number[]): number[] {
     inputs = inputs !== undefined ? inputs : Array(this._size).fill(0);
     if (inputs.length !== this._size) throw new RangeError();
-    const final = voltages.map((v, i) => v + this.getDelta(voltages, i) * dt)
+    const final = voltages.map((v, i) => v + this.getDelta(voltages, i) * dt);
     return final.map((v, i) => v + inputs![i]);
   }
 

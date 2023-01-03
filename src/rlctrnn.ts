@@ -2,12 +2,17 @@ import { sigmoid } from "./activation";
 import { ICTRNN } from "./ictrnn";
 import { Fluctuator } from "./fluctuator";
 
+const ACTIVITY_WEIGHT = 0.01;
+
 export class RlCtrnn implements ICTRNN {
   private _size: number;
   private _biases: Fluctuator[];
   private _timeConstants: Fluctuator[];
   private _weights: Fluctuator[][];
   private _fluctuators: Fluctuator[];
+
+  public _activity: number[];
+  private _outputs: number[];
 
   constructor(size: number) {
     this._size = size;
@@ -16,6 +21,10 @@ export class RlCtrnn implements ICTRNN {
     this._timeConstants = Array.from(o, () => new Fluctuator(1));
     this._weights = Array.from(o, () => Array.from(o, () => new Fluctuator(0)));
     this._fluctuators = [];
+
+    this._activity = Array.from(o, () => 0);
+    this._outputs = Array.from(o, () => 0);
+
     for (let i = 0; i < this._size; i++) {
       this._fluctuators.push(this._biases[i]);
       this._fluctuators.push(this._timeConstants[i]);
@@ -24,8 +33,9 @@ export class RlCtrnn implements ICTRNN {
       }
     }
     // TODO: replace this with a real way to set the amplitude
-    this._fluctuators.forEach(f => {
+    this._fluctuators.forEach((f) => {
       f.amplitude_range.min = 0;
+      f.amplitude_range.max = 1;
       f.amplitude = 0;
     });
   }
@@ -35,15 +45,19 @@ export class RlCtrnn implements ICTRNN {
   }
 
   get biases(): readonly number[] {
-    return this._biases.map(b => b.value);
+    return this._biases.map((b) => b.value);
   }
 
   get timeConstants(): readonly number[] {
-    return this._timeConstants.map(tc => tc.value);
+    return this._timeConstants.map((tc) => tc.value);
   }
 
   get weights(): readonly (readonly number[])[] {
-    return this._weights.map(w => w.map(w => w.value));
+    return this._weights.map((w) => w.map((w) => w.value));
+  }
+
+  get fluctuators(): Fluctuator[][] {
+    return this._weights;
   }
 
   setBias(index: number, bias: number): void {
@@ -58,11 +72,50 @@ export class RlCtrnn implements ICTRNN {
     this._weights[to][from].value = weight;
   }
 
-  update(dt: number, voltages: number[], inputs?: number[]): number[] {
+  addNode(): void {
+    const ctrnn = this;
+    function normflux(value: number): Fluctuator {
+      const f = new Fluctuator(value);
+      ctrnn._fluctuators.push(f);
+      // f.amplitude_range.min = 0;
+      // f.amplitude_range.max = 1;
+      // f.amplitude = 0;
+      return f;
+    }
+    this._biases.push(normflux(0));
+    this._timeConstants.push(normflux(1));
+    for (let i = 0; i < this._size; i++) {
+      this._weights[i].push(normflux(0));
+    }
+    const o = { length: ++this._size };
+    this._weights.push(Array.from(o, () => normflux(0)));
+  }
+
+  private update_activity(dt: number, voltages: number[]) {
+    const outputs = this.getOutputs(voltages);
+    for (let i = 0; i < this.size; i++) {
+      const weighted = this._activity[i] * (1 - ACTIVITY_WEIGHT);
+      const diff = Math.abs(outputs[i] - this._outputs[i]);
+      this._activity[i] = weighted + ACTIVITY_WEIGHT * diff;
+    }
+    this._outputs = outputs;
+  }
+
+  update(
+    dt: number,
+    voltages: number[],
+    inputs?: number[],
+    locked = false
+  ): number[] {
     inputs = inputs !== undefined ? inputs : Array(this._size).fill(0);
     if (inputs.length !== this._size) throw new RangeError();
-    this._fluctuators.forEach(f => f.update(dt));
-    const final = voltages.map((v, i) => v + this.getDelta(voltages, i) * dt)
+    // this.update_activity(0, voltages);
+    // for (let pre = 0; pre < this.size; pre++) {
+    //   for (let post = 0; post < this.size; post++) {
+    //     this._weights[pre][post].update(dt, 0);
+    //   }
+    // }
+    const final = voltages.map((v, i) => v + this.getDelta(voltages, i) * dt);
     return final.map((v, i) => v + inputs![i]);
   }
 
