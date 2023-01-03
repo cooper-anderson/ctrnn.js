@@ -2,7 +2,8 @@ import { Ctrnn } from "../ctrnn";
 import { ICTRNN } from "../ictrnn";
 import { RlCtrnn } from "../rlctrnn";
 
-const dt = 0.05, duration = 300.0;
+const dt = 0.05,
+  duration = 300.0;
 
 function oscillator<T extends ICTRNN>(ctrnn: T): T {
   ctrnn.setBias(0, -2.75);
@@ -55,6 +56,107 @@ describe("rlctrnn", () => {
       const outputs = ctrnn.getOutputs(voltages);
       const rlOutputs = rlctrnn.getOutputs(rlvoltages);
       expect(rlOutputs).toEqual(outputs);
+    });
+  });
+
+  it("updates correctly when a new node is addded", () => {
+    const ctrnn = new RlCtrnn(2);
+    expect(ctrnn.size).toBe(2);
+    expect(ctrnn.biases.length).toBe(2);
+    expect(ctrnn.timeConstants.length).toBe(2);
+    expect(ctrnn.weights.length).toBe(2);
+    expect(ctrnn.weights[0].length).toBe(2);
+    ctrnn.addNode();
+    expect(ctrnn.size).toBe(3);
+    expect(ctrnn.biases.length).toBe(3);
+    expect(ctrnn.timeConstants.length).toBe(3);
+    expect(ctrnn.weights.length).toBe(3);
+    expect(ctrnn.weights[0].length).toBe(3);
+  });
+});
+
+describe("oscillator", () => {
+  const TIMESTEP = 0.1;
+  const size = 2;
+  const rlctrnn = oscillator(new RlCtrnn(2));
+
+  let voltages = rlctrnn.init_voltage();
+  function simulate(duration: number, func?: (v: number[]) => void): number[] {
+    for (let t = 0; t < duration; t += TIMESTEP) {
+      voltages = rlctrnn.update(TIMESTEP, voltages);
+      func && func(voltages);
+    }
+    return rlctrnn.getOutputs(voltages);
+  }
+
+  let fitness = 0;
+  let last = simulate(250);
+  simulate(50, (voltages) => {
+    let sum = 0,
+      outputs = rlctrnn.getOutputs(voltages);
+    for (let i = 0; i < size; i++) sum += Math.abs(outputs[i] - last[i]);
+    fitness += sum / size;
+    last = outputs;
+  });
+
+  it("matches fitness", () => {
+    expect(fitness).toBeCloseTo(2.16);
+  });
+});
+
+describe("three node network", () => {
+  const rlctrnn = oscillator(new RlCtrnn(3));
+
+  let voltages = rlctrnn.init_voltage();
+  let outputs = rlctrnn.getOutputs(voltages);
+
+  it("has correct initial outputs", () => {
+    expect(outputs[0]).toBeCloseTo(0.06);
+    expect(outputs[1]).toBeCloseTo(0.148);
+    expect(outputs[2]).toBe(0.5);
+  });
+
+  describe("from a two node network", () => {
+    const rlctrnn = oscillator(new RlCtrnn(2));
+    rlctrnn.addNode();
+    let voltages = rlctrnn.init_voltage();
+    let outputs = rlctrnn.getOutputs(voltages);
+
+    it("has correct initial outputs", () => {
+      expect(outputs[0]).toBeCloseTo(0.06);
+      expect(outputs[1]).toBeCloseTo(0.148);
+      expect(outputs[2]).toBe(0.5);
+    });
+
+    describe("works as an oscillator", () => {
+      const TIMESTEP = 0.1;
+
+      let voltages = rlctrnn.init_voltage();
+      function simulate(
+        duration: number,
+        func?: (v: number[]) => void
+      ): number[] {
+        for (let t = 0; t < duration; t += TIMESTEP) {
+          voltages = rlctrnn.update(TIMESTEP, voltages);
+          func && func(voltages);
+        }
+        return rlctrnn.getOutputs(voltages);
+      }
+
+      let fitness = 0;
+      let last = simulate(250);
+      simulate(50, (voltages) => {
+        let sum = 0,
+          outputs = rlctrnn.getOutputs(voltages);
+        for (let i = 0; i < rlctrnn.size; i++)
+          sum += Math.abs(outputs[i] - last[i]);
+        fitness += sum / rlctrnn.size;
+        last = outputs;
+      });
+
+      it("matches fitness", () => {
+        expect((fitness / 2) * 3).toBeCloseTo(2.16);
+      });
     });
   });
 });
