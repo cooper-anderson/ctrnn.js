@@ -77,9 +77,9 @@ export class RlCtrnn implements ICTRNN {
     function normflux(value: number): Fluctuator {
       const f = new Fluctuator(value);
       ctrnn._fluctuators.push(f);
-      // f.amplitude_range.min = 0;
-      // f.amplitude_range.max = 1;
-      // f.amplitude = 0;
+      f.amplitude_range.min = 0;
+      f.amplitude_range.max = 1;
+      f.amplitude = 0;
       return f;
     }
     this._biases.push(normflux(0));
